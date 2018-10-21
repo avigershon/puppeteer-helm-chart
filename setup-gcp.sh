@@ -86,10 +86,17 @@ system_setup () {
 
     # export PATH=$PATH:/usr/local/bin;
     ./get_helm.sh;
+    helm init --wait --upgrade;
+    wait_for_tiller
+    kubectl create serviceaccount --namespace kube-system tiller
+    wait_for_tiller
+    kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+    wait_for_tiller
+    kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
+    wait_for_tiller
 
     helm init --wait --upgrade;
 
-    sleep 120
 
     kubectl create serviceaccount --namespace kube-system tiller
     kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
@@ -97,6 +104,24 @@ system_setup () {
 
     helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
     helm repo add stable http://storage.googleapis.com/kubernetes-charts
+}
+
+wait_for_tiller()
+{
+    state=true
+    while $state ; do
+    echo "Waitting for Tiller..."
+    result=$( kubectl get pods --all-namespaces | egrep  "kube-system.*tiller.*Running.*[1-9][m,h,d]")
+    #echo "DEBUG: Result found is $result"
+    if [ -n "$result" ] ; then
+        echo "####################"
+        echo "### COMPLETE !!! ###"
+        echo "####################"
+        kubectl get pods --all-namespaces
+        state=false
+    fi
+    sleep 1
+    done
 }
 
 install_charts() {
