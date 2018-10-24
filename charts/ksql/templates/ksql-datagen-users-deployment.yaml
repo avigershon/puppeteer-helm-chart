@@ -36,9 +36,9 @@ spec:
         - name: KSQL_LOG4J_OPTS
           value: -Dlog4j.configuration=file:/etc/ksql/log4j-rolling.properties
         - name: STREAMS_BOOTSTRAP_SERVERS
-          value: kafka:29092
+          value: kafka:9092
         - name: STREAMS_SCHEMA_REGISTRY_HOST
-          value: schema-registry
+          value: kafka-schema-registry
         - name: STREAMS_SCHEMA_REGISTRY_PORT
           value: "8081"
         image: confluentinc/ksql-examples:0.5-rc0
