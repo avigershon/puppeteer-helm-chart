@@ -1,27 +1,110 @@
--- lets the windows accumulate more data
-set 'commit.interval.ms'='2000';
-set 'cache.max.bytes.buffering'='10000000';
-set 'auto.offset.reset'='earliest';
 
 
--- 1. SOURCE of SPORT EVENTS
-DROP STREAM IF EXISTS sport_events;
+-- 1. SOURCE of ClickStream
+--DROP STREAM IF EXISTS clickstream;
+CREATE STREAM clickstream (_time bigint,time varchar, ip varchar, request varchar, status int, userid int, bytes bigint, agent varchar) with (kafka_topic = 'clickstream', value_format = 'json');
 
-CREATE STREAM sport_events(name varchar, source_name varchar,keywords varchar,league_name varchar,sport_name varchar,minute int, date bigint,score varchar, score_1 varchar, score_2 varchar, timestamp bigint, id varchar, sg map<VARCHAR, VARCHAR>) with (kafka_topic = 'SPORT_EVENT', value_format = 'json', KEY='id', TIMESTAMP='timestamp');
 
-#DROP TABLE IF EXISTS sport_events_unique_per_min_unique;
-#CREATE table sport_events_unique_per_min_unique AS SELECT name,max(minute) minute, id, count(*) AS events FROM sport_events window TUMBLING (size 60 second) GROUP BY id;
+----------------------------------------------------------------------------------------------------------------------------
+-- A series of basic clickstream-analytics
+--
+-- Min, Max, UDFs etc
+----------------------------------------------------------------------------------------------------------------------------
 
-DROP STREAM IF EXISTS onebetpro_events;
-CREATE STREAM onebetpro_events AS 
+ -- number of events per minute - think about key-for-distribution-purpose - shuffling etc - shouldnt use 'userid'
+--DROP TABLE IF EXISTS events_per_min;
+CREATE table events_per_min AS SELECT userid, count(*) AS events FROM clickstream window TUMBLING (size 60 second) GROUP BY userid;
 
-SELECT name,source_name,minute,EXTRACTJSONFIELD(sg['1'],'$.ft.ah[0][0][0]') as ah_0_id,EXTRACTJSONFIELD(sg['1'],'$.ft.ah[0][0][1]') as ah_0_money_line,EXTRACTJSONFIELD(sg['1'],'$.ft.ah[0][0][2]') as ah_0_run_line,EXTRACTJSONFIELD(sg['1'],'$.ft.ah[0][1][0]') as ah_1_id,EXTRACTJSONFIELD(sg['1'],'$.ft.ah[0][1][1]') as ah_1_money_line,EXTRACTJSONFIELD(sg['1'],'$.ft.ah[0][1][2]') as ah_1_run_line ,EXTRACTJSONFIELD(sg['1'],'$.ft.ou[0][0][0]') as ou_0_id,EXTRACTJSONFIELD(sg['1'],'$.ft.ou[0][0][1]') as ou_0_money_line,EXTRACTJSONFIELD(sg['1'],'$.ft.ou[0][0][2]') as ou_0_run_line,EXTRACTJSONFIELD(sg['1'],'$.ft.ou[0][1][0]') as ou_1_id,EXTRACTJSONFIELD(sg['1'],'$.ft.ou[0][1][1]') as ou_1_money_line,EXTRACTJSONFIELD(sg['1'],'$.ft.ou[0][1][2]') as ou_1_run_line from sport_events where sg['1'] is not null;
+-- 3. BUILD STATUS_CODES
+-- static table
+--DROP TABLE IF EXISTS clickstream_codes;
+CREATE TABLE clickstream_codes (code int, definition varchar) with (key='code', kafka_topic = 'clickstream_codes', value_format = 'json');
 
-#DROP STREAM IF EXISTS sport_events_per_min;
-#CREATE STREAM sport_events_per_min AS SELECT name,source_name,minute,EXTRACTJSONFIELD(sg['1'],'$.ft.ah[0][0][0]') as ah_0_id,EXTRACTJSONFIELD(sg['1'],'$.ft.ah[0][0][1]') as ah_0_money_line,EXTRACTJSONFIELD(sg['1'],'$.ft.ah[0][0][2]') as ah_0_run_line,EXTRACTJSONFIELD(sg['1'],'$.ft.ah[0][1][0]') as ah_1_id,EXTRACTJSONFIELD(sg['1'],'$.ft.ah[0][1][1]') as ah_1_money_line,EXTRACTJSONFIELD(sg['1'],'$.ft.ah[0][1][2]') as ah_1_run_line ,EXTRACTJSONFIELD(sg['1'],'$.ft.ou[0][0][0]') as ou_0_id,EXTRACTJSONFIELD(sg['1'],'$.ft.ou[0][0][1]') as ou_0_money_line,EXTRACTJSONFIELD(sg['1'],'$.ft.ou[0][0][2]') as ou_0_run_line,EXTRACTJSONFIELD(sg['1'],'$.ft.ou[0][1][0]') as ou_1_id,EXTRACTJSONFIELD(sg['1'],'$.ft.ou[0][1][1]') as ou_1_money_line,EXTRACTJSONFIELD(sg['1'],'$.ft.ou[0][1][2]') as ou_1_run_line from sport_events;
+-- 4. BUILD PAGE_VIEWS
+--DROP TABLE IF EXISTS pages_per_min;
+CREATE TABLE pages_per_min AS SELECT userid, count(*) AS pages FROM clickstream WINDOW HOPPING (size 60 second, advance by 5 second) WHERE request like '%html%' GROUP BY userid ;
 
--- 1. SOURCE of TVBET EVENTS
-DROP STREAM IF EXISTS tvbet_events;
+----------------------------------------------------------------------------------------------------------------------------
+-- URL STATUS CODES (Join AND Alert)
+--
+--
+----------------------------------------------------------------------------------------------------------------------------
 
-CREATE STREAM tvbet_events(timestamp bigint,EventId int,EventName varchar,Id bigint, TypeName varchar,Status varchar,InPlay bool,Runners array<varchar>) with (kafka_topic = 'TVBET_EVENT', value_format = 'json', KEY='Id', TIMESTAMP='timestamp');
-SELECT EventName name,EXTRACTJSONFIELD(Runners[0], '$.Id') as line_0_id,EXTRACTJSONFIELD(Runners[0], '$.Name') as line_0_name,EXTRACTJSONFIELD(Runners[0], '$.Odd') as line_0_money_line,EXTRACTJSONFIELD(Runners[0], '$.Handicap') as line_0_run_line,EXTRACTJSONFIELD(Runners[1], '$.Id') as line_1_id,EXTRACTJSONFIELD(Runners[1], '$.Name') as line_1_name,EXTRACTJSONFIELD(Runners[1], '$.Odd') as line_1_money_line,EXTRACTJSONFIELD(Runners[1], '$.Handicap') as line_1_run_line from tvbet_events where (TypeName='Asian Handicap' OR TypeName='Half Time' OR TypeName='Goal Lines') AND EXTRACTJSONFIELD(Runners[0], '$.Name')!='The Draw' AND EXTRACTJSONFIELD(Runners[1], '$.Name')!='The Draw';
+-- Use 'HAVING' Filter to show ERROR codes > 400 where count > 5
+--DROP TABLE IF EXISTS ERRORS_PER_MIN_ALERT;
+CREATE TABLE ERRORS_PER_MIN_ALERT AS SELECT status, count(*) AS errors FROM clickstream window HOPPING ( size 30 second, advance by 20 second) WHERE status > 400 GROUP BY status HAVING count(*) > 5 AND count(*) is not NULL;
+
+--DROP TABLE IF EXISTS ERRORS_PER_MIN;
+CREATE table ERRORS_PER_MIN AS SELECT status, count(*) AS errors FROM clickstream window HOPPING ( size 60 second, advance by 5  second) WHERE status > 400 GROUP BY status;
+
+-- VIEW - Enrich Codes with errors with Join to Status-Code definition
+--DROP STREAM IF EXISTS ENRICHED_ERROR_CODES;
+--DROP TABLE IF EXISTS ENRICHED_ERROR_CODES_COUNT;
+
+--Join using a STREAM
+CREATE STREAM ENRICHED_ERROR_CODES AS SELECT code, definition FROM clickstream LEFT JOIN clickstream_codes ON clickstream.status = clickstream_codes.code;
+-- Aggregate (count&groupBy) using a TABLE-Window
+CREATE TABLE ENRICHED_ERROR_CODES_COUNT AS SELECT code, definition, COUNT(*) AS count FROM ENRICHED_ERROR_CODES WINDOW TUMBLING (size 30 second) GROUP BY code, definition HAVING COUNT(*) > 1;
+
+
+----------------------------------------------------------------------------------------------------------------------------
+-- Clickstream users for enrichment and exception monitoring
+--
+--
+----------------------------------------------------------------------------------------------------------------------------
+
+-- users lookup table
+--DROP TABLE IF EXISTS WEB_USERS;
+CREATE TABLE WEB_USERS (user_id int, registered_At BIGINT, username varchar, first_name varchar, last_name varchar, city varchar, level varchar) with (key='user_id', kafka_topic = 'clickstream_users', value_format = 'json');
+
+-- Clickstream enriched with user account data
+--DROP STREAM IF EXISTS customer_clickstream;
+CREATE STREAM customer_clickstream WITH (PARTITIONS=2) AS SELECT userid, u.first_name, u.last_name, u.level, time, ip, request, status, agent FROM clickstream c LEFT JOIN web_users u ON c.userid = u.user_id;
+
+-- Find error views by important users
+----DROP STREAM IF EXISTS platinum_customers_with_errors
+--CREATE stream platinum_customers_with_errors WITH (PARTITIONS=2) AS seLECT * FROM customer_clickstream WHERE status > 400 AND level = 'Platinum';
+
+-- Find error views by important users in one shot
+----DROP STREAM IF EXISTS platinum_errors;
+--CREATE STREAM platinum_errors WITH (PARTITIONS=2) AS SELECT userid, u.first_name, u.last_name, u.city, u.level, time, ip, request, status, agent FROM clickstream c LEFT JOIN web_users u ON c.userid = u.user_id WHERE status > 400 AND level = 'Platinum';
+--
+---- Trend of errors from important users
+----DROP TABLE IF EXISTS platinum_page_errors_per_5_min;
+--CREATE TABLE platinum_errors_per_5_min AS SELECT userid, first_name, last_name, city, count(*) AS running_count FROM platinum_errors WINDOW TUMBLING (SIZE 5 MINUTE) WHERE request LIKE '%html%' GROUP BY userid, first_name, last_name, city;
+
+
+----------------------------------------------------------------------------------------------------------------------------
+-- User experience monitoring
+--
+-- View IP, username and City Versus web-site-activity (hits)
+----------------------------------------------------------------------------------------------------------------------------
+--DROP STREAM IF EXISTS USER_CLICKSTREAM;
+CREATE STREAM USER_CLICKSTREAM AS SELECT userid, u.username, ip, u.city, request, status, bytes FROM clickstream c LEFT JOIN web_users u ON c.userid = u.user_id;
+
+-- Aggregate (count&groupBy) using a TABLE-Window
+--DROP TABLE IF EXISTS USER_IP_ACTIVITY;
+CREATE TABLE USER_IP_ACTIVITY AS SELECT username, ip, city, COUNT(*) AS count FROM USER_CLICKSTREAM WINDOW TUMBLING (size 60 second) GROUP BY username, ip, city HAVING COUNT(*) > 1;
+
+----------------------------------------------------------------------------------------------------------------------------
+-- User session monitoring
+--
+-- Sessionisation using IP addresses - 300 seconds of inactivity expires the session
+--
+----------------------------------------------------------------------------------------------------------------------------
+
+--DROP TABLE IF EXISTS CLICK_USER_SESSIONS;
+CREATE TABLE CLICK_USER_SESSIONS AS SELECT username, count(*) AS events FROM USER_CLICKSTREAM window SESSION (300 second) GROUP BY username;
+
+----------------------------------------------------------------------------------------------------------------------------
+-- Blog Article tracking user-session and bandwidth
+--
+-- Sessionisation using IP addresses - 300 seconds of inactivity expires the session
+--
+----------------------------------------------------------------------------------------------------------------------------
+
+----DROP TABLE IF EXISTS PER_USER_KBYTES;
+--CREATE TABLE PER_USER_KBYTES AS SELECT username, sum(bytes)/1024 AS kbytes FROM USER_CLICKSTREAM window SESSION (300 second) GROUP BY username;
+
+----DROP TABLE IF EXISTS MALICIOUS_USER_SESSIONS;
+--CREATE TABLE MALICIOUS_USER_SESSIONS AS SELECT username, ip,  sum(bytes)/1024 AS kbytes FROM USER_CLICKSTREAM window SESSION (300 second) GROUP BY username, ip  HAVING sum(bytes)/1024 > 50;
