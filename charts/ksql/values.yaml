@@ -7,9 +7,9 @@ kafka:
   port: 9092
   
 schemaRegistry:
-  host: schema-registry-schema-registry
+  host: kafka-schema-registry
   port: 8081
-  
+
 datagen:
   enabled : false
 
