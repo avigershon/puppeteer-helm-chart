@@ -5,13 +5,13 @@
 kafka:
   host: kafka
   port: 9092
-  
+
 schemaRegistry:
   host: kafka-schema-registry
   port: 8081
 
 datagen:
-  enabled : false
+  enabled : true
 
 replicaCount: 1
 
