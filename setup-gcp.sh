@@ -101,6 +101,9 @@ system_setup () {
 
     helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
     helm repo add stable http://storage.googleapis.com/kubernetes-charts
+
+    kubectl create secret docker-registry dbar1 --docker-server=docker.io --docker-username=dbar1 --docker-password=Dedi123$% --docker-email=dbar@ashford.com
+
 }
 
 wait_for_tiller()
