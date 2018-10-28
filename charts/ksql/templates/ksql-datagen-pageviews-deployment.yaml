@@ -28,9 +28,9 @@ spec:
           sr-ready kafka-schema-registry 8081 20 && echo Waiting a few seconds for topic
           creation to finish... && sleep 2 && java -jar /usr/share/java/ksql-examples/ksql-examples-4.1.0-SNAPSHOT-standalone.jar
           quickstart=pageviews format=delimited topic=pageviews bootstrap-server=kafka:9092
-          maxInterval=100 iterations=1000 && java -jar /usr/share/java/ksql-examples/ksql-examples-4.1.0-SNAPSHOT-standalone.jar
+          maxInterval=1000 iterations=1000 && java -jar /usr/share/java/ksql-examples/ksql-examples-4.1.0-SNAPSHOT-standalone.jar
           quickstart=pageviews format=delimited topic=pageviews bootstrap-server=kafka:9092
-          maxInterval=1000
+          maxInterval=10000
         env:
         - name: KSQL_CONFIG_DIR
           value: /etc/ksql
