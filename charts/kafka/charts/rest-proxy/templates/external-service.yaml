@@ -1,0 +1,19 @@
+{{- if .Values.external.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "rest-proxy.fullname" . }}-external
+  labels:
+    app: {{ template "rest-proxy.name" . }}
+    chart: {{ template "rest-proxy.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.external.type }}
+  ports:
+    - name: rest-proxy
+      port: {{ .Values.servicePort }}
+  selector:
+    app: {{ template "rest-proxy.name" . }}
+    release: {{ .Release.Name }}
+{{- end -}}

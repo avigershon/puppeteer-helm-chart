@@ -12,6 +12,9 @@ spec:
   - name: broker
     port: 9092
     targetPort: kafka
+  - name: ssl
+    port: 9093
+    targetPort: ssl
 {{- if and .Values.prometheus.jmx.enabled .Values.prometheus.operator.enabled }}
   - name: jmx-exporter
     protocol: TCP
