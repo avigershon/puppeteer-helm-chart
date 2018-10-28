@@ -185,7 +185,7 @@ configurationOverrides:
   "security.inter.broker.protocol": SSL
   "ssl.client.auth": required
   "auto.leader.rebalance.enable": true
-  "auto.create.topics.enable": false
+  "auto.create.topics.enable": true
   "controlled.shutdown.enable": true
   "controlled.shutdown.max.retries": 100
 
