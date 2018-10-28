@@ -144,7 +144,7 @@ datasources:
      # <int> org id. will default to orgId 1 if not specified
      orgId: 1
      # <string> url
-     url: https://35.225.47.212:443
+     url: https://35.184.58.39:443
      # <string> database password, if used
      password: ""
      # <string> database user, if used
@@ -156,7 +156,7 @@ datasources:
      # <string> basic auth username
      basicAuthUser: "admin"
      # <string> basic auth password
-     basicAuthPassword: "JX0aM7jQu0xhAfN8"
+     basicAuthPassword: "r8cg7y8p56NQrraO"
      # <bool> enable/disable with credentials headers
      withCredentials: false
      # <bool> mark as default datasource. Max one per org
