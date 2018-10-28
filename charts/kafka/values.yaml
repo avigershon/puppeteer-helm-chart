@@ -177,17 +177,17 @@ ssl:
 ## ref: https://kafka.apache.org/documentation/#brokerconfigs
 ##
 configurationOverrides:
-  "offsets.topic.replication.factor": 3
-  "fetch.message.max.bytes": "15728640"
-  "replica.fetch.max.bytes": "15728640"
-  "message.max.bytes": "15728640"
-  "max.message.bytes": "15728640"
-  "security.inter.broker.protocol": SSL
-  "ssl.client.auth": required
-  "auto.leader.rebalance.enable": true
-  "auto.create.topics.enable": true
-  "controlled.shutdown.enable": true
-  "controlled.shutdown.max.retries": 100
+  # "offsets.topic.replication.factor": 3
+  # "fetch.message.max.bytes": "15728640"
+  # "replica.fetch.max.bytes": "15728640"
+  # "message.max.bytes": "15728640"
+  # "max.message.bytes": "15728640"
+  # "security.inter.broker.protocol": SSL
+  # "ssl.client.auth": required
+  # "auto.leader.rebalance.enable": true
+  # "auto.create.topics.enable": true
+  # "controlled.shutdown.enable": true
+  # "controlled.shutdown.max.retries": 100
 
 
 
