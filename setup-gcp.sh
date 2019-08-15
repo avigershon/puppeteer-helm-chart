@@ -261,7 +261,7 @@ gcp_create_cluster () {
 
   CLUSTER_NAME=$1
 
-  gcloud beta container --project "datalake-888-dev" clusters create "${CLUSTER_NAME}" --zone "us-central1-a" --username "admin" --cluster-version "1.12.8-gke.10" --machine-type "n1-standard-2" --image-type "COS" --disk-type "pd-standard" --disk-size "10" --scopes "https://www.googleapis.com/auth/cloud-platform" --preemptible --num-nodes "3" --enable-cloud-logging --enable-cloud-monitoring --no-enable-ip-alias --network "projects/datalake-888-dev/global/networks/default" --subnetwork "projects/datalake-888-dev/regions/us-central1/subnetworks/default" --enable-autoscaling --min-nodes "3" --max-nodes "4" --addons HorizontalPodAutoscaling,HttpLoadBalancing --enable-autoupgrade --enable-autorepair
+  gcloud beta container --project "crawler-249816" clusters create "${CLUSTER_NAME}" --zone "us-central1-a" --username "admin" --cluster-version "1.12.8-gke.10" --machine-type "n1-standard-2" --image-type "COS" --disk-type "pd-standard" --disk-size "10" --scopes "https://www.googleapis.com/auth/cloud-platform" --preemptible --num-nodes "3" --enable-cloud-logging --enable-cloud-monitoring --no-enable-ip-alias --network "projects/crawler-249816/global/networks/default" --subnetwork "projects/crawler-249816/regions/us-central1/subnetworks/default" --enable-autoscaling --min-nodes "3" --max-nodes "4" --addons HorizontalPodAutoscaling,HttpLoadBalancing --enable-autoupgrade --enable-autorepair
 
 }
 
