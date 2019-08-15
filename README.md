@@ -1,1 +1,1 @@
-# kubernetes-demo
+# puppeteer-helm-chart
