@@ -28,7 +28,7 @@ customEnv:
   CONNECT_URL: ~
 
 service:
-  type: NodePort
+  type: LoadBalancer
   clusterIP: ~
   port: 9090
   # nodePort: 31311
