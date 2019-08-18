@@ -28,6 +28,8 @@ spec:
       containers:
         - name: puppeteer
           image: "{{ .Values.image }}:{{ .Values.imageTag }}"
+          command: ["/bin/bash"]
+          args: ["-c","node out/app.js"]
           ports:
           - containerPort: {{ .Values.servicePort }}
           env:
