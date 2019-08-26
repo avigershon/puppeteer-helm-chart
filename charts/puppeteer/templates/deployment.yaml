@@ -30,6 +30,11 @@ spec:
           image: "{{ .Values.image }}:{{ .Values.imageTag }}"
           command: ["/bin/bash"]
           args: ["-c","node out/app.js"]
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - NET_ADMIN
           ports:
           - containerPort: {{ .Values.servicePort }}
           env:
@@ -37,7 +42,10 @@ spec:
           - name: {{ $key | quote }}
             value: {{ $value | quote }}
           {{- end }}
-
+          volumeMounts: 
+            readOnly: true
+            - mountPath: /dev/net/tun
+              name: dev-net-tun
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml .Values.imagePullSecrets | indent 8 }}
