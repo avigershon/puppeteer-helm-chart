@@ -1,5 +1,5 @@
 apiVersion: apps/v1beta2
-kind: DaemonSet
+kind: Deployment
 metadata:
   name: {{ template "puppeteer.fullname" . }}
   labels:
@@ -35,7 +35,7 @@ spec:
             capabilities:
               add:
                 - NET_ADMIN
-          volumeMounts: 
+          volumeMounts:
             - mountPath: /dev/net/tun
               name: dev-net-tun
           ports:
