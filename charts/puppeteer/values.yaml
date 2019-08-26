@@ -26,6 +26,8 @@ servicePort: 9090
 ## Additional env variables
 customEnv:
   CONNECT_URL: ~
+  ACTIVATION_CODE: EHOOFLGCVCAQW6XWIUWSI4P
+  SERVER: nlam
 
 service:
   type: LoadBalancer
