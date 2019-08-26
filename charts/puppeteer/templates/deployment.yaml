@@ -1,5 +1,5 @@
 apiVersion: apps/v1beta2
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: {{ template "puppeteer.fullname" . }}
   labels:
@@ -28,6 +28,16 @@ spec:
       containers:
         - name: puppeteer
           image: "{{ .Values.image }}:{{ .Values.imageTag }}"
+          command: ["/bin/bash"]
+          args: ["-c","node out/app.js"]
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - NET_ADMIN
+          volumeMounts: 
+            - mountPath: /dev/net/tun
+              name: dev-net-tun
           ports:
           - containerPort: {{ .Values.servicePort }}
           env:
@@ -35,7 +45,6 @@ spec:
           - name: {{ $key | quote }}
             value: {{ $value | quote }}
           {{- end }}
-
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml .Values.imagePullSecrets | indent 8 }}
@@ -48,3 +57,7 @@ spec:
       tolerations:
 {{ toYaml .Values.tolerations | indent 8 }}
       {{- end }}
+      volumes:
+        - name: dev-net-tun
+          hostPath:
+            path: /dev/net/tun
