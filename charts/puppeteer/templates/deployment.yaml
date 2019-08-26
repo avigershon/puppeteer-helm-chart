@@ -57,3 +57,7 @@ spec:
       tolerations:
 {{ toYaml .Values.tolerations | indent 8 }}
       {{- end }}
+      volumes:
+        - name: dev-net-tun
+          hostPath:
+            path: /dev/net/tun
