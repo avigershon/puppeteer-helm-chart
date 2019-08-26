@@ -27,7 +27,12 @@ spec:
             {{ toYaml .Values.resources | indent 12 }}
           volumeMounts:
             - name: openvpn-client-config
-              mountPath: /vpn
+              mountPath: /vpn/client.ovpn
+              subPath: client.ovpn
+              readOnly: true
+            - name: openvpn-client-auth
+              mountPath: /vpn/auth.txt
+              subPath: auth.txt
               readOnly: true
             - mountPath: /dev/net/tun
               name: dev-net-tun
@@ -40,6 +45,9 @@ spec:
         - name: openvpn-client-config
           configMap:
             name: openvpn-config
+        - name: openvpn-client-auth
+          configMap:
+            name: openvpn-auth
         - name: dev-net-tun
           hostPath:
             path: /dev/net/tun
