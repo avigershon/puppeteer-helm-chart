@@ -35,6 +35,10 @@ spec:
             capabilities:
               add:
                 - NET_ADMIN
+          volumeMounts: 
+            readOnly: true
+              - mountPath: /dev/net/tun
+                name: dev-net-tun
           ports:
           - containerPort: {{ .Values.servicePort }}
           env:
@@ -42,10 +46,6 @@ spec:
           - name: {{ $key | quote }}
             value: {{ $value | quote }}
           {{- end }}
-          volumeMounts: 
-            readOnly: true
-              - mountPath: /dev/net/tun
-                name: dev-net-tun
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml .Values.imagePullSecrets | indent 8 }}
