@@ -36,9 +36,8 @@ spec:
               add:
                 - NET_ADMIN
           volumeMounts: 
-            readOnly: true
-              - mountPath: /dev/net/tun
-                name: dev-net-tun
+            - mountPath: /dev/net/tun
+              name: dev-net-tun
           ports:
           - containerPort: {{ .Values.servicePort }}
           env:
