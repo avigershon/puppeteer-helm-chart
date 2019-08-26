@@ -7,7 +7,7 @@ replicaCount: 1
 ## Image Info
 ## ref: https://hub.docker.com/r/confluentinc/cp-kafka/
 image:  gcr.io/crawler-249816/github.com/navinox-gaming/crawler
-imageTag: db26faf
+imageTag: 9503e92
 
 ## Specify a imagePullPolicy
 ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
