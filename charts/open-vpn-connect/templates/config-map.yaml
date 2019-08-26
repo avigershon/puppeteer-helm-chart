@@ -4,4 +4,5 @@ metadata:
   name: openvpn-config
   namespace: kube-system
 data:
-{{ (.Files.Glob "*.ovpn").AsConfig | indent 2 }}
+  client.ovpn: |-
+{{ include (print $.Template.BasePath "/_france-paris-1-udp.ovpn") . | indent 4 }}
