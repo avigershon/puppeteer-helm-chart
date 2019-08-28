@@ -6,8 +6,8 @@ replicaCount: 1
 
 ## Image Info
 ## ref: https://hub.docker.com/r/confluentinc/cp-kafka/
-image:  ictu/sshpass
-imageTag: "latest"
+image:  gcr.io/crawler-249816/github.com/avigershon/sshpass
+imageTag: "6999e8f"
 
 
 ## Specify a imagePullPolicy
