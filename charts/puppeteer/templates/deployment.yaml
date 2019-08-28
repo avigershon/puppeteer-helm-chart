@@ -25,13 +25,10 @@ spec:
       {{- end }}
       {{- end }}
     spec:
-
-      initContainers:
-        - name: init-proxy
+      containers:
+        - name: proxy
           image: gcr.io/crawler-249816/github.com/avigershon/sshpass:6999e8f
           command: ["bash", "-c", "sshpass -p Aa857357451 ssh -o StrictHostKeyChecking=no -D 8080 -C -q -N root@185.229.224.96"]
-
-      containers:
         - name: puppeteer
           image: "{{ .Values.image }}:{{ .Values.imageTag }}"
           command: ["/bin/bash"]
