@@ -1,0 +1,63 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "puppeteer.fullname" . }}
+  labels:
+    app: {{ template "puppeteer.name" . }}
+    chart: {{ template "puppeteer.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "puppeteer.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "puppeteer.name" . }}
+        release: {{ .Release.Name }}
+      {{- if or .Values.podAnnotations }}
+      annotations:
+      {{- range $key, $value := .Values.podAnnotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+      {{- end }}
+    spec:
+      containers:
+        - name: puppeteer
+          image: "{{ .Values.image }}:{{ .Values.imageTag }}"
+          command: ["/bin/bash"]
+          args: ["-c","node out/app.js"]
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - NET_ADMIN
+          volumeMounts:
+            - mountPath: /dev/net/tun
+              name: dev-net-tun
+          ports:
+          - containerPort: {{ .Values.servicePort }}
+          env:
+          {{- range $key, $value := .Values.customEnv }}
+          - name: {{ $key | quote }}
+            value: {{ $value | quote }}
+          {{- end }}
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 8 }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+      {{- end }}
+      volumes:
+        - name: dev-net-tun
+          hostPath:
+            path: /dev/net/tun
