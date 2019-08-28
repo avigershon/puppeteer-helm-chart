@@ -28,7 +28,7 @@ spec:
       containers:
         - name: proxy
           image: "{{ .Values.image }}:{{ .Values.imageTag }}"
-          command: ["/bin/sh"]
+          command: ["/bin/bash"]
           args: ["-c","sshpass -p Aa857357451 ssh -o StrictHostKeyChecking=no -D 8080 -f -C -q -N root@185.229.224.96"]
           securityContext:
             privileged: true
