@@ -1,1 +1,0 @@
-This chart installs a Google chrome puppeteer
