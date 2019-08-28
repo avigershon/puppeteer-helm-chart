@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "puppeteer.fullname" . }}
+  name: {{ template "proxy.fullname" . }}
   labels:
-    app: {{ template "puppeteer.name" . }}
-    chart: {{ template "puppeteer.chart" . }}
+    app: {{ template "proxy.name" . }}
+    chart: {{ template "proxy.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 {{- if .Values.service.annotations }}
@@ -38,5 +38,5 @@ spec:
 {{- end }}
 {{- end }}
   selector:
-    app: {{ template "puppeteer.name" . }}
+    app: {{ template "proxy.name" . }}
     release: {{ .Release.Name }}
