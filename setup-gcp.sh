@@ -481,7 +481,5 @@ else
     system_setup;
 
     echo "Installing charts..."
-    helm upgrade v1 --install  --set mssql-linux.enabled=true --set minio.enabled=false --set cp-kafka-connect.enabled=false --set cp-kafka-connect-ui.enabled=false --wait .
-    helm upgrade v1 --install  --set mssql-linux.enabled=true --set minio.enabled=true  --set cp-kafka-connect.enabled=false --set cp-kafka-connect-ui.enabled=false --wait .
-    helm upgrade v1 --install  --set mssql-linux.enabled=true --set minio.enabled=true --set kubeless-functions.enabled=true .
+    helm upgrade v1 --install  .
 fi
