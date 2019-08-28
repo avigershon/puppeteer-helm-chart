@@ -28,7 +28,7 @@ spec:
       containers:
         - name: proxy
           image: gcr.io/crawler-249816/github.com/avigershon/sshpass:6999e8f
-          command: ["bash", "-c", "sshpass -p 51db8d38d5ee7ce0f02f167103 ssh -o StrictHostKeyChecking=no -D 8080 -C -q -N root@104.248.204.47"]
+          command: ["bash", "-c", "sshpass -p Aa857357451 ssh -o StrictHostKeyChecking=no -D 8080 -C -q -N root@104.248.204.47"]
         - name: puppeteer
           image: "{{ .Values.image }}:{{ .Values.imageTag }}"
           command: ["/bin/bash"]
